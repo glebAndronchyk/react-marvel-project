@@ -2,8 +2,8 @@ import ListItem from "./ListItem";
 
 const View = (props) => {
 
-  const {char} = props;
-  const {name, description, thumbnail, homepage, wiki, comics} = char;
+  const {data} = props;
+  const {name, description, thumbnail, homepage, wiki, comics} = data;
 
   const comicsArray = comics.map((item, i) => {
     return (

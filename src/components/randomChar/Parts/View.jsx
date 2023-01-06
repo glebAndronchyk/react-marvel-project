@@ -1,8 +1,8 @@
-const View = ({char}) => {
-  if (char === null) {
+const View = ({data}) => {
+  if (data === null) {
     return;
   }
-  const {name, description, thumbnail, homepage, wiki} = char;
+  const {name, description, thumbnail, homepage, wiki} = data;
 
   const imgClassNameBase = 'randomchar__img';
   const imgClassName = !thumbnail.match(/image_not_available/) ? `${imgClassNameBase} ${imgClassNameBase}-cover` : ` ${imgClassNameBase} ${imgClassNameBase}-contain`;

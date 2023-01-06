@@ -4,6 +4,23 @@ import Spinner from "../spinner/Spinner";
 import useMarvelService from "../../services/MarvelService";
 
 import './charList.scss';
+import ErrorMessage from "../errorMessage/ErrorMessage";
+
+const setContent = (process, Component, newItemLoading) => {
+  switch (process) {
+    case 'waiting':
+      return <Spinner/>;
+    case 'loading':
+      return newItemLoading ? <Component /> : <Spinner/>;
+    case 'confirmed':
+      return <Component />;
+    case 'error':
+      return <ErrorMessage/>;
+    default:
+      throw new Error('Unexpected process state');
+  }
+}
+
 
 const CharList = (props) => {
 
@@ -12,7 +29,7 @@ const CharList = (props) => {
   const [offset, setOffset] = useState(210);
   const [dataEnded, setDataEnded] = useState(false);
 
-  const {loading, getCharacters} = useMarvelService();
+  const {loading, getCharacters, process, setProcess} = useMarvelService();
 
   useEffect(() => {
     onRequest(offset, true);
@@ -21,7 +38,8 @@ const CharList = (props) => {
   const onRequest = (offset, initial) => {
     initial ? setNewItemLoading(false) : setNewItemLoading(true);
     getCharacters(offset)
-      .then(onListLoaded);
+      .then(onListLoaded)
+      .then(() => setProcess('confirmed'))
   }
 
   const onListLoaded = (newData) => {
@@ -82,15 +100,9 @@ const CharList = (props) => {
     focusOnItem(i);
   }
 
-  const items = renderItems(data);
-  const charsContainerClassName = loading ? 'char__center' : 'char__grid'
-  const spinner = loading && !newItemLoading ? <Spinner/> : null;
-
   return (
     <div className="char__list">
-      <ul className={charsContainerClassName}>
-        {spinner || items}
-      </ul>
+      {setContent(process, () => renderItems(data), newItemLoading)}
       <button
         className="button button__main button__long"
         disabled={newItemLoading}

@@ -8,6 +8,21 @@ import ComicsGrid from "./Parts/ComicsGrid";
 
 import './comicsList.scss';
 
+const setContent = (process, Component, newItemLoading) => {
+  switch (process) {
+    case 'waiting':
+      return <Spinner/>;
+    case 'loading':
+      return newItemLoading ? <Component /> : <Spinner/>;
+    case 'confirmed':
+      return <Component />;
+    case 'error':
+      return <ErrorMessage/>;
+    default:
+      throw new Error('Unexpected process state');
+  }
+}
+
 const ComicsList = () => {
 
   const [comicsList, setComicsList] = useState([]);
@@ -15,7 +30,7 @@ const ComicsList = () => {
   const [offset, setOffset] = useState(0);
   const [comicsEnded, setComicsEnded] = useState(false);
 
-  const {loading, error, getAllComics} = useMarvelService();
+  const {getAllComics, process, setProcess} = useMarvelService();
 
   useEffect(() => {
     onRequest(offset, true);
@@ -25,6 +40,7 @@ const ComicsList = () => {
     initial ? setNewItemLoading(false) : setNewItemLoading(true);
     getAllComics(offset)
       .then(onComicsListLoaded)
+      .then(() => setProcess('confirmed'));
   }
 
   const onComicsListLoaded = (newComicsList) => {
@@ -41,7 +57,7 @@ const ComicsList = () => {
   function renderItems(arr) {
     const items = arr.map((item, i) => {
       return (
-        <ComicsItem item={item} />
+        <ComicsItem key={i} item={item} />
       )
     })
 
@@ -50,16 +66,10 @@ const ComicsList = () => {
     )
   }
 
-  const items = renderItems(comicsList);
-
-  const errorMessage = error ? <ErrorMessage/> : null;
-  const spinner = loading && !newItemLoading ? <Spinner/> : null;
 
   return (
     <div className="comics__list">
-      {errorMessage}
-      {spinner}
-      {items}
+      {setContent(process, () => renderItems(comicsList), newItemLoading)}
       <button
         disabled={newItemLoading}
         style={{'display': comicsEnded ? 'none' : 'block'}}
